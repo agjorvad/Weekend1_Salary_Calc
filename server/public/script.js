@@ -1,3 +1,6 @@
+let expenditures = 0;
+employees = [];
+
 class Employee{
     constructor(firstName, lastName, id, title, salary){
     this.firstName = firstName;
@@ -8,11 +11,9 @@ class Employee{
 }
 }
 
-employees = [];
-
 $(document).ready(function(){
     $('#submitButton').on( 'click', addNewEmployee);
-    $('#submitButton').on( 'click', annualSalary);
+    $('#submitButton').on( 'click', calculateAnnualSalary);
 });
 
 function addNewEmployee(){
@@ -20,17 +21,15 @@ function addNewEmployee(){
         '<tr>' +
         '<td>' + $("#newFirstName").val() + '</td>' +
         '<td>' + $("#newLastName").val() + '</td>' +
-        '<td>' + $("#newID").val() + '</td>' +
+        '<td>' + parseInt($("#newID").val()) + '</td>' +
         '<td>' + $("#newTitle").val() + '</td>' +
-        '<td>' + '$' + $("#newAnnualSalary").val() + '</td>' +
+        '<td>' + '$' + parseInt($("#newAnnualSalary").val()) + '</td>' +
         '<td>' + '<button class="deleteButton">Delete</button>' + '</td>' +
     '</tr>');
+    $('#employeeList tr:last').data(employee);
     addArray();
-}
 
-let expenditures = 0;
-
-function annualSalary(){
+function calculateAnnualSalary(){
     let salary = $('#newAnnualSalary').val();
     let month = salary / 12; 
     expenditures += month;
@@ -41,12 +40,30 @@ function annualSalary(){
 
 $('#employeeList').on( 'click', '.deleteButton', function(){
     console.log( 'Delete button was clicked.');
+    let employeeList = $('#employeeList');
     $(this).closest('tr').remove();
 });
 }
 
 function addArray(){
-let newEmployee = new Employee($("#newFirstName").val(), $("#newLastName").val(), $("#newID").val(), $("#newTitle").val(), $("#newAnnualSalary").val());
+let newEmployee = new Employee($("#newFirstName").val(), $("#newLastName").val(), parseInt($("#newID").val()), $("#newTitle").val(), parseInt($("#newAnnualSalary").val()));
     employees.push( newEmployee );
     console.log( employees );
+}
+
+function deleteEmployee(){
+    console.log('Clicked on', $(this));
+    const rowToDelete = $(this).closest('tr');
+    console.log('Row to delete', rowToDelete);
+    const employeeToDelete = rowToDelete.data();
+    console.log('Employee to delete', employeeToDelete);
+    rowToDelete.remove();
+  
+    //Remove the employee from the array
+    for(let i=0; i<employeeList.length; i++){
+      let current = employeeList[i];
+      if (current.id == employeeToDelete.id){
+        employeeList.splice(i, 1);
+      }
+    }
 }
