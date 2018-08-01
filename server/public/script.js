@@ -1,69 +1,106 @@
-let expenditures = 0;
-employees = [];
+console.log('Javascript has loaded');
 
-class Employee{
-    constructor(firstName, lastName, id, title, salary){
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.id = id;
-    this.title = title;
-    this.salary = salary;
-}
-}
+const maxBudget = 20000;
+let currentEmployees = [];
+let employeeAddId = 0;
+let uniqueId = true;
 
-$(document).ready(function(){
-    $('#submitButton').on( 'click', addNewEmployee);
-    $('#submitButton').on( 'click', calculateAnnualSalary);
-});
-
-function addNewEmployee(){
-    $('#employeeList').append(
-        '<tr>' +
-        '<td>' + $("#newFirstName").val() + '</td>' +
-        '<td>' + $("#newLastName").val() + '</td>' +
-        '<td>' + parseInt($("#newID").val()) + '</td>' +
-        '<td>' + $("#newTitle").val() + '</td>' +
-        '<td>' + '$' + parseInt($("#newAnnualSalary").val()) + '</td>' +
-        '<td>' + '<button class="deleteButton">Delete</button>' + '</td>' +
-    '</tr>');
-    $('#employeeList tr:last').data(employee);
-    addArray();
-
-function calculateAnnualSalary(){
-    let salary = $('#newAnnualSalary').val();
-    let month = salary / 12; 
-    expenditures += month;
-    $('#monthlyExpenditures').text( 'Total Monthly: ' + '$' + expenditures.toFixed(2));
-    if (expenditures > 20000){
-        $('#monthlyExpenditures').css( 'color', 'red');
-    }
-
-$('#employeeList').on( 'click', '.deleteButton', function(){
-    console.log( 'Delete button was clicked.');
-    let employeeList = $('#employeeList');
-    $(this).closest('tr').remove();
-});
-}
-
-function addArray(){
-let newEmployee = new Employee($("#newFirstName").val(), $("#newLastName").val(), parseInt($("#newID").val()), $("#newTitle").val(), parseInt($("#newAnnualSalary").val()));
-    employees.push( newEmployee );
-    console.log( employees );
-}
-
-function deleteEmployee(){
-    console.log('Clicked on', $(this));
-    const rowToDelete = $(this).closest('tr');
-    console.log('Row to delete', rowToDelete);
-    const employeeToDelete = rowToDelete.data();
-    console.log('Employee to delete', employeeToDelete);
-    rowToDelete.remove();
-  
-    //Remove the employee from the array
-    for(let i=0; i<employeeList.length; i++){
-      let current = employeeList[i];
-      if (current.id == employeeToDelete.id){
-        employeeList.splice(i, 1);
-      }
+class Employee {
+    constructor () {
+        this.firstName = $('#firstNameInput').val();
+        this.lastName = $('#lastNameInput').val();
+        this.employeeId = $('#employeeIdInput').val();
+        this.title = $('#employeeTitleInput').val();
+        this.annualSalary = $('#annualSalaryInput').val();
+        this.monthlySalary = this.annualSalary / 12;
+        this.employeeAddId = employeeAddId;
     }
 }
+
+$(document).ready(onReady);
+
+function onReady () {
+    console.log('jQuery has loaded');
+    $('#addEmployeeButton').click(addEmployeeHandler);
+    $('#employeeList').on('click', '.removeEmployeeButton',removeEmployeeHandler);
+    updateMonthlyCosts();
+} // end onReady
+
+function addEmployeeHandler () {
+    console.log('addEmployeeButton clicked');
+    verifyUniqueId();
+    if ( uniqueId ) {
+        addNewEmployee();
+        updateMonthlyCosts();
+        clearInputs(); 
+    }
+    else {
+        $('#employeeIdInput').val('');
+        $('#employeeIdInput').attr('placeholder', 'ID already exists');
+        $('#employeeIdInput').css('background-color', 'lightcoral');
+    }
+} // end addEmployeeHander
+
+function addNewEmployee () {
+    let firstName = '<td>' + $('#firstNameInput').val() + '</td>';
+    let lastName = '<td>' + $('#lastNameInput').val() + '</td>';
+    let employeeId = '<td>' + $('#employeeIdInput').val() + '</td>';
+    let employeeTitle = '<td>' + $('#employeeTitleInput').val() + '</td>';
+    let employeeSalary = '<td>$' + Number($('#annualSalaryInput').val()).toLocaleString('en') + '</td>';
+    let removeButton = '<td><button class="removeEmployeeButton">Remove</button>';
+    currentEmployees.push(new Employee);
+    $('#employeeList').append('<tr>' + firstName + lastName + employeeId + employeeTitle + employeeSalary + removeButton + '</tr>');
+    $('#employeeList tr:last').data("employeeAddId", employeeAddId);
+    console.log($('#employeeList tr:last').data("employeeAddId"));
+    employeeAddId ++;
+} // end addNewEmployee
+
+function clearInputs () {
+    $('#firstNameInput').val('');
+    $('#lastNameInput').val('');
+    $('#employeeIdInput').val('');
+    $('#employeeTitleInput').val('');
+    $('#annualSalaryInput').val('');
+    $('#employeeIdInput').attr('placeholder', 'ID');
+    $('#employeeIdInput').css('background-color', 'rgb(246, 251, 255)');
+} // end clearInputs
+
+function updateMonthlyCosts () {
+    let totalMonthlyCosts = 0;
+    for (i = 0; i<currentEmployees.length; i++) {
+        totalMonthlyCosts += Number(currentEmployees[i].monthlySalary);
+    }
+    let monthlyCostFormatted = totalMonthlyCosts.toLocaleString('en', {minimumFractionDigits: 2}); // format monthly costs to include commas for large numbers
+    $('#totalMonthlyCosts').text('Total Monthly: $' + monthlyCostFormatted);
+    if (totalMonthlyCosts > maxBudget) {
+        $('#totalMonthlyCosts').css('color', 'red');
+    } // end if
+    else {
+        $('#totalMonthlyCosts').css('color', 'black');
+    } // end else
+} // end updateMonthlyCosts
+
+function removeEmployeeHandler () {
+    console.log('removeEmployeeButton clicked');
+    let rowData = $(this).parent().parent().data("employeeAddId");
+    console.log(rowData);
+    for (i = 0; i<currentEmployees.length; i++) {
+        if ( currentEmployees[i].employeeAddId == rowData ) {
+            totalMonthlyCosts -= currentEmployees[i].monthlySalary;
+            currentEmployees.splice(i,1);
+        } // end if
+    } // end for
+    $(this).parent().parent().remove();
+    updateMonthlyCosts();
+} // end removeEmployeeHandler
+
+function verifyUniqueId () {
+    for (i = 0; i<currentEmployees.length; i++) {
+        if (currentEmployees[i].employeeId == $('#employeeIdInput').val()) {
+            uniqueId = false;
+        } // end if
+        else if (currentEmployees[i].employeeId !== $('#employeeIdInput').val()) {
+            uniqueId = true;
+        } // end else if
+    } // end for
+} // end verifyUniqueId
