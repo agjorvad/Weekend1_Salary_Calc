@@ -22,9 +22,14 @@ $(document).ready(onReady);
 function onReady () {
     console.log('jQuery has loaded');
     $('#addEmployeeButton').click(addEmployeeHandler);
-    $('#employeeList').on('click', '.removeEmployeeButton',removeEmployeeHandler);
+    $('#employeeList').on('click', '.deleteEmployeeButton',removeEmployeeHandler);
     updateMonthlyCosts();
 } // end onReady
+
+
+function alertSubmitter() {
+    alert("Please fill out all fields!");
+}
 
 function addEmployeeHandler () {
     console.log('addEmployeeButton clicked');
@@ -39,7 +44,7 @@ function addEmployeeHandler () {
         $('#employeeIdInput').attr('placeholder', 'ID already exists');
         $('#employeeIdInput').css('background-color', 'lightcoral');
     }
-} // end addEmployeeHander
+} // end addEmployeeHandler
 
 function addNewEmployee () {
     let firstName = '<td>' + $('#firstNameInput').val() + '</td>';
@@ -47,12 +52,20 @@ function addNewEmployee () {
     let employeeId = '<td>' + $('#employeeIdInput').val() + '</td>';
     let employeeTitle = '<td>' + $('#employeeTitleInput').val() + '</td>';
     let employeeSalary = '<td>$' + Number($('#annualSalaryInput').val()).toLocaleString('en') + '</td>';
-    let removeButton = '<td><button class="removeEmployeeButton">Remove</button>';
+    let removeButton = '<td><button class="deleteEmployeeButton">Delete</button>';
+            // any of input fields are blank -> does not submit, requires complete inputs
+            if ($('#firstNameInput').val() == '' || $('#lastNameInput').val() == '' || $('#employeeIdInput').val() == ''
+            || $('#employeeTitleInput').val() == '' || $('#annualSalaryInput').val() == '') {
+            alertSubmitter()
+        // all input fields complete -> proceeds processing data
+             } else {
+            // remove empty fields warning
     currentEmployees.push(new Employee);
     $('#employeeList').append('<tr>' + firstName + lastName + employeeId + employeeTitle + employeeSalary + removeButton + '</tr>');
     $('#employeeList tr:last').data("employeeAddId", employeeAddId);
     console.log($('#employeeList tr:last').data("employeeAddId"));
     employeeAddId ++;
+        }
 } // end addNewEmployee
 
 function clearInputs () {
@@ -62,7 +75,7 @@ function clearInputs () {
     $('#employeeTitleInput').val('');
     $('#annualSalaryInput').val('');
     $('#employeeIdInput').attr('placeholder', 'ID');
-    $('#employeeIdInput').css('background-color', 'rgb(246, 251, 255)');
+    $('#employeeIdInput').css('background-color', 'white');
 } // end clearInputs
 
 function updateMonthlyCosts () {
@@ -81,8 +94,8 @@ function updateMonthlyCosts () {
 } // end updateMonthlyCosts
 
 function removeEmployeeHandler () {
-    console.log('removeEmployeeButton clicked');
-    let rowData = $(this).parent().parent().data("employeeAddId");
+    console.log('deleteEmployeeButton clicked');
+    let rowData = $(this).closest('tr').data("employeeAddId");
     console.log(rowData);
     for (i = 0; i<currentEmployees.length; i++) {
         if ( currentEmployees[i].employeeAddId == rowData ) {
@@ -90,7 +103,7 @@ function removeEmployeeHandler () {
             currentEmployees.splice(i,1);
         } // end if
     } // end for
-    $(this).parent().parent().remove();
+    $(this).closest('tr').remove();
     updateMonthlyCosts();
 } // end removeEmployeeHandler
 
